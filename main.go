@@ -1,9 +1,12 @@
 package main
 
 import (
-	"assignment/models"
+	"assignment/entities/migrations"
+	"assignment/entities/repos"
+	"assignment/entities/repos/common"
 	"assignment/pg"
 	"assignment/server"
+	"assignment/server/schedulers"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jinzhu/configor"
 	"github.com/valyala/fasthttp"
@@ -18,10 +21,11 @@ func main() {
 	spew.Dump(config)
 	logInit(config.Log)
 	router := server.Router()
-	if db, err := pg.Init(config.DB, models.Migrations...); err != nil {
+	db, err := pg.Init(config.DB, migrations.Migrations...)
+	if err != nil {
 		log.Fatal(err)
-	} else {
-		models.InitRepositories(db)
 	}
+	repos.InitRepositories(db)
+	schedulers.InitSchedulers(config.Schedulers.CancelOddConfig, common.GetRepo())
 	log.Fatal(fasthttp.ListenAndServe(config.Server.Host, router.Handler))
 }

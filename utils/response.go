@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 )
@@ -16,6 +17,11 @@ type Response struct {
 	Log   *log.Entry
 }
 
+type Message struct {
+	ErrorMessage StringNull
+	Data         interface{}
+}
+
 func NewResponse(data interface{}, err error, logger *log.Entry) IResponse {
 	return &Response{
 		Error: err,
@@ -24,15 +30,32 @@ func NewResponse(data interface{}, err error, logger *log.Entry) IResponse {
 	}
 }
 
+func (r Response) message() Message {
+	var errorMessage string
+	if r.Error != nil {
+		errorMessage = r.Error.Error()
+	}
+	return Message{
+		ErrorMessage: StringNull{
+			IsNull: r.Error == nil,
+			Value:  errorMessage,
+		},
+		Data: r.Data,
+	}
+}
+
 func (r Response) Print(ctx *fasthttp.RequestCtx) {
 	if r.Error != nil {
 		r.Log.WithError(r.Error).Warn()
-		ctx.Error(r.Error.Error(), getStatus(ctx, fasthttp.StatusBadRequest))
-	} else if msg, err := json.Marshal(r.Data); err != nil {
+		res, _ := json.Marshal(r.message())
+		ctx.Error(string(res), getStatus(ctx, fasthttp.StatusBadRequest))
+	} else if msg, err := json.Marshal(r.message()); err != nil {
 		r.Log.WithError(err).Warn()
-		ctx.Error("cannot convert response", fasthttp.StatusInternalServerError)
+		r.Error = errors.New("cannot convert response")
+		res, _ := json.Marshal(r.message())
+		ctx.Error(string(res), fasthttp.StatusInternalServerError)
 	} else {
-		r.Log.Info(msg)
+		r.Log.Info(r.Data)
 		ctx.Success("application/json", msg)
 	}
 }

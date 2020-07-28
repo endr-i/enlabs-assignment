@@ -1,8 +1,7 @@
-package models
+package migrations
 
 import (
-	"assignment/models/transaction"
-	"assignment/models/user"
+	"assignment/entities/models"
 	"assignment/pg"
 	"github.com/jinzhu/gorm"
 )
@@ -17,30 +16,38 @@ type userMigration struct {
 }
 
 func (userMigration) MigrateUp(db *gorm.DB) error {
-	return db.AutoMigrate(user.User{}).Error
+	return db.AutoMigrate(models.User{}).Error
 }
 
 func (userMigration) MigrateDown(db *gorm.DB) error {
-	return db.DropTable(&user.User{}).Error
+	return db.DropTable(&models.User{}).Error
 }
 
 type transactionMigration struct {
 }
 
 func (transactionMigration) MigrateUp(db *gorm.DB) error {
-	return db.AutoMigrate(transaction.Transaction{}).Error
+	if err := db.AutoMigrate(models.Transaction{}).Error; err != nil {
+		return err
+	}
+	return db.Model(&models.Transaction{}).AddForeignKey("user_id", "users(id)", "RESTRICT", "RESTRICT").Error
 }
 
 func (transactionMigration) MigrateDown(db *gorm.DB) error {
-	return db.DropTable(&transaction.Transaction{}).Error
+	if err := db.DropTable(&models.Transaction{}).Error; err != nil {
+		return err
+	}
+	return db.Model(&models.Transaction{}).RemoveForeignKey("user_id", "users(id)").Error
 }
 
 type createUsersMigration struct {
 }
 
 func (createUsersMigration) MigrateUp(db *gorm.DB) error {
-	users := []user.User{
-		{}, {}, {},
+	users := []models.User{
+		{Name: "test1"},
+		{Name: "test2"},
+		{Name: "test3"},
 	}
 	var err error
 	for _, u := range users {

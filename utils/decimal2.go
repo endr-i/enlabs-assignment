@@ -6,7 +6,7 @@ import "encoding/json"
 type Decimal2 int
 
 func (d Decimal2) MarshalJSON() ([]byte, error) {
-	value := float32(int(d) / 100.0)
+	value := float32(d) / 100.0
 	return json.Marshal(value)
 }
 

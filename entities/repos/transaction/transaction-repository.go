@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"assignment/entities/models"
 	"github.com/jinzhu/gorm"
 	"sync"
 )
@@ -11,20 +12,25 @@ var (
 )
 
 type IRepository interface {
-	Transaction(int) (*Transaction, error)
+	Transaction(int) (*models.Transaction, error)
+	Create(transaction *models.Transaction) error
 }
 
 type repository struct {
 	db *gorm.DB
 }
 
-func (r repository) Transaction(id int) (*Transaction, error) {
-	transaction := Transaction{Id: id}
+func (r repository) Transaction(id int) (*models.Transaction, error) {
+	transaction := models.Transaction{Id: id}
 	err := r.db.First(&transaction).Error
 	if err != nil {
 		return nil, err
 	}
 	return &transaction, nil
+}
+
+func (r repository) Create(transaction *models.Transaction) error {
+	return r.db.Create(transaction).Error
 }
 
 func InitRepo(db *gorm.DB) IRepository {

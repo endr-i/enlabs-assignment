@@ -1,8 +1,8 @@
-package transactions
+package transaction
 
 import (
-	transactionModel "assignment/models/transaction"
-	userModel "assignment/models/user"
+	"assignment/entities/models"
+	commonRepo "assignment/entities/repos/common"
 	"assignment/utils"
 	"encoding/json"
 	"errors"
@@ -12,19 +12,19 @@ import (
 	"time"
 )
 
-type TransactionResponse struct {
-	User *userModel.User
+type PostResponse struct {
+	User *models.User
 }
 
-type TransactionRequest struct {
+type PostRequest struct {
 	State         string
 	Amount        utils.Decimal2
 	TransactionId string
 }
 
-func Handle() fasthttp.RequestHandler {
+func HandlePost() fasthttp.RequestHandler {
 	return func(ctx *fasthttp.RequestCtx) {
-		resp := new(TransactionResponse)
+		resp := new(PostResponse)
 		var err error
 		logger := log.WithTime(time.Now())
 		defer func() {
@@ -41,23 +41,28 @@ func Handle() fasthttp.RequestHandler {
 		}
 
 		body := ctx.PostBody()
-		req := new(TransactionRequest)
+		req := new(PostRequest)
 		if e := json.Unmarshal(body, req); e != nil {
 			err = errors.New("cannot parse request")
 			logger = logger.WithField("request", body)
 			return
 		}
 		logger = logger.WithField("request", req)
-		userRepo := userModel.GetRepo()
-		user, e := userRepo.User(uId)
-		if e != nil {
-			err = errors.New("user is absent")
-			logger.WithError(e).Error()
+
+		transactionType := ctx.Request.Header.Peek("Source-Type")
+
+		transaction := models.Transaction{
+			State:         models.ConvertTransactionStateStoI(req.State),
+			Type:          models.ConvertTransactionTypeStoI(string(transactionType)),
+			UserId:        uId,
+			Amount:        req.Amount,
+			TransactionId: req.TransactionId,
+		}
+		commonRepository := commonRepo.GetRepo()
+		user, err := commonRepository.CreateUserTransaction(&transaction)
+		if err != nil {
 			return
 		}
-
-		transactionRepo := transactionModel.GetRepo()
-
 		resp.User = user
 	}
 }

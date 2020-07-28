@@ -2,7 +2,8 @@ package server
 
 import (
 	"assignment/server/middlewares"
-	"assignment/server/routes/transactions"
+	"assignment/server/routes/user"
+	"assignment/server/routes/user/transaction"
 	"fmt"
 	"github.com/buaazp/fasthttprouter"
 	"github.com/valyala/fasthttp"
@@ -18,6 +19,8 @@ func Router() *fasthttprouter.Router {
 	router.GET("/ping", func(ctx *fasthttp.RequestCtx) {
 		fmt.Fprintf(ctx, "pong")
 	})
-	router.POST("/user/:userId/transaction", middlewares.AuthMiddleware(transactions.Handle()))
+	router.POST("/user", middlewares.AuthMiddleware(user.HandlePost()))
+	router.GET("/user/:userId", middlewares.AuthMiddleware(user.HandleGet()))
+	router.POST("/user/:userId/transaction", middlewares.AuthMiddleware(transaction.HandlePost()))
 	return router
 }
