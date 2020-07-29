@@ -65,10 +65,9 @@ func (r *repository) CreateUserTransaction(transaction *models.Transaction) (*mo
 }
 
 func (r *repository) CancelOddTransactions(n int) error {
-	r.db.Transaction(func(tx *gorm.DB) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
 		return tx.Exec(getCancelOddQuery(n)).Error
 	})
-	return nil
 }
 
 func InitRepo(db *gorm.DB, userRepository userRepo.IRepository, transactionRepository transactionRepo.IRepository) IRepository {

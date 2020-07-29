@@ -14,8 +14,7 @@ import (
 )
 
 type Config struct {
-	Host    string `default:":8080"`
-	LogFile string `default:""`
+	Host string `default:":8080"`
 }
 
 func Router() *fasthttprouter.Router {

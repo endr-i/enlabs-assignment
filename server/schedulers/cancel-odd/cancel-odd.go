@@ -9,7 +9,7 @@ import (
 
 type Config struct {
 	Period         int `default:"1"`
-	NumberToCancel int `default:"0"`
+	NumberToCancel int `default:"10"`
 }
 
 type CancelOddScheduler struct {
