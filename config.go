@@ -11,6 +11,7 @@ type Config struct {
 	DB         pg.Config
 	Log        LogConfig
 	Schedulers struct {
+		Enable          bool `default:"false"`
 		CancelOddConfig cancel_odd.Config
 	}
 }

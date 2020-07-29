@@ -1,6 +1,9 @@
 package models
 
-import "assignment/utils"
+import (
+	"assignment/utils"
+	"time"
+)
 
 var (
 	transactionStates = [2]string{"win", "loss"}
@@ -35,6 +38,7 @@ type Transaction struct {
 	Status        int            `gorm:"default:0"`
 	Amount        utils.Decimal2 `gorm:"default:0"`
 	TransactionId string         `gorm:"unique_index"`
+	DateCreate    *time.Time     `gorm:"default:CURRENT_TIMESTAMP"`
 	User          *User          `gorm:"foreignkey=UserId"`
 }
 

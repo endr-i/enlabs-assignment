@@ -19,12 +19,13 @@ type CancelOddScheduler struct {
 
 func (scheduler CancelOddScheduler) Exec() error {
 	tick := time.Tick(time.Duration(scheduler.config.Period) * time.Minute)
+	logger := log.WithField("scheduler", "cancelOdd")
+	logger.Info("initializing")
 	for range tick {
-		log.Info("start cancel odd scheduler")
 		if err := scheduler.repo.CancelOddTransactions(scheduler.config.NumberToCancel); err != nil {
-			log.WithError(err).Error("cancel odd scheduler error")
+			logger.WithError(err).Error("error")
 		} else {
-			log.Info("cancel odd scheduler success")
+			logger.Info("executed")
 		}
 	}
 	return nil

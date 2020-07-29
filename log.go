@@ -15,8 +15,9 @@ func logInit(config LogConfig) {
 	if config.File == "" {
 		log.SetOutput(os.Stdout)
 	} else {
-		file, err := os.OpenFile("info.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+		file, err := os.OpenFile(config.File, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 		if err != nil {
+			log.Error("cannot open logger file")
 			log.SetOutput(os.Stdout)
 		}
 		log.SetOutput(file)

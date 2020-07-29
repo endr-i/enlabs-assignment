@@ -4,6 +4,7 @@ import (
 	"assignment/entities/models"
 	transactionRepo "assignment/entities/repos/transaction"
 	userRepo "assignment/entities/repos/user"
+	"errors"
 	"github.com/jinzhu/gorm"
 	"sync"
 )
@@ -28,11 +29,11 @@ func (r *repository) CreateUserTransaction(transaction *models.Transaction) (*mo
 	user := models.User{Id: transaction.UserId}
 	if err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.First(&user).Error; err != nil {
-			return err
+			return errors.New("no user for transaction")
 		}
-		//if !tx.First(&transactionModel.Transaction{TransactionId: transaction.TransactionId}).RecordNotFound() {
-		//	return errors.New("transaction already handled")
-		//}
+		if !tx.First(&models.Transaction{}, "transaction_id=?", transaction.TransactionId).RecordNotFound() {
+			return errors.New("transaction already handled")
+		}
 		balance := user.Balance
 		if transaction.State == models.TransactionStateWin {
 			balance += transaction.Amount
@@ -65,7 +66,7 @@ func (r *repository) CreateUserTransaction(transaction *models.Transaction) (*mo
 
 func (r *repository) CancelOddTransactions(n int) error {
 	r.db.Transaction(func(tx *gorm.DB) error {
-
+		return tx.Exec(getCancelOddQuery(n)).Error
 	})
 	return nil
 }

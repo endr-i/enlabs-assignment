@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	migrationVersion = MigrationVersion{Version: -1, Id: 1}
+	migrationVersion = MigrationVersion{}
 	onceMigration    sync.Once
 )
 
@@ -15,9 +15,10 @@ type Migration interface {
 	MigrateDown(db *gorm.DB) error
 }
 
+// TODO: handle each migration
 type MigrationVersion struct {
 	Id      int `gorm:"PRIMARY_KEY"`
-	Version int `gorm:"default:-1"`
+	Version int `gorm:"default:0"`
 }
 
 func GetMigrationVersion() (*MigrationVersion, error) {

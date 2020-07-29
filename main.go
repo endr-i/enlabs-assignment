@@ -26,6 +26,8 @@ func main() {
 		log.Fatal(err)
 	}
 	repos.InitRepositories(db)
-	schedulers.InitSchedulers(config.Schedulers.CancelOddConfig, common.GetRepo())
+	if config.Schedulers.Enable {
+		schedulers.InitSchedulers(config.Schedulers.CancelOddConfig, common.GetRepo())
+	}
 	log.Fatal(fasthttp.ListenAndServe(config.Server.Host, router.Handler))
 }

@@ -25,12 +25,12 @@ func Init(config Config, migrations ...Migration) (*gorm.DB, error) {
 			return
 		}
 		version := migrationVersion.Version
-		for i := version + 1; i < len(migrations); i++ {
+		for i := version; i < len(migrations); i++ {
 			m := migrations[i]
 			if e := m.MigrateUp(db); e != nil {
 				break
 			}
-			version = i
+			version = i + 1
 		}
 		if version != migrationVersion.Version {
 			migrationVersion.Version = version

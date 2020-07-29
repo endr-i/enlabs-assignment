@@ -5,6 +5,7 @@ import (
 	userRepo "assignment/entities/repos/user"
 	"assignment/utils"
 	"errors"
+	"github.com/davecgh/go-spew/spew"
 	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 	"strconv"
@@ -17,6 +18,7 @@ type GetResponse struct {
 
 func HandleGet() fasthttp.RequestHandler {
 	return func(ctx *fasthttp.RequestCtx) {
+		spew.Dump(*ctx)
 		resp := new(PostResponse)
 		var err error
 		logger := log.WithTime(time.Now())
@@ -26,8 +28,13 @@ func HandleGet() fasthttp.RequestHandler {
 		}()
 
 		userId := ctx.UserValue("userId")
+		userIdS, ok := userId.(string)
+		if !ok {
+			err = errors.New("no user id")
+			return
+		}
 		logger = logger.WithField("userId", userId)
-		uId, e := strconv.Atoi(userId.(string))
+		uId, e := strconv.Atoi(userIdS)
 		if e != nil {
 			err = errors.New("cannot convert userId to int")
 			return

@@ -48,6 +48,10 @@ func HandlePost() fasthttp.RequestHandler {
 			return
 		}
 		logger = logger.WithField("request", req)
+		if req.TransactionId == "" {
+			err = errors.New("no transaction id")
+			return
+		}
 
 		transactionType := ctx.Request.Header.Peek("Source-Type")
 
